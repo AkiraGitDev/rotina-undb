@@ -87,16 +87,19 @@ app/
   (admin)/
     _layout.tsx            ← tab navigator do admin
     dashboard.tsx
+    projetos.tsx           ← listagem + CTA criar projeto
+    tarefas.tsx            ← listagem global de tarefas
     aprovacoes.tsx         ← fila de aprovação
     usuarios.tsx
     criar-usuario.tsx
-    perfil.tsx
+    perfil.tsx             ← acessível via header do dashboard
   (colaborador)/
     _layout.tsx            ← tab navigator do colaborador
     dashboard.tsx
-    criar-tarefa.tsx
     minhas-tarefas.tsx
-    perfil.tsx
+    projetos.tsx           ← projetos que participo (read-only)
+    criar-tarefa.tsx
+    perfil.tsx             ← acessível via header do dashboard
   projeto/
     [id].tsx               ← detalhe dinâmico
   tarefa/
@@ -104,6 +107,13 @@ app/
 ```
 
 **Convenção:** grupos `(auth)`, `(admin)`, `(colaborador)` isolam contextos de navegação e permissão. Redirecionamento pós-login vai pra `(admin)` ou `(colaborador)` conforme o papel.
+
+**Tabs do tab navigator:**
+
+- **Admin** (5 tabs): Dashboard · Projetos · Tarefas · Aprovações · Usuários
+- **Colaborador** (4 tabs): Dashboard · Minhas Tarefas · Projetos · Criar
+
+`perfil.tsx` fica fora das tabs em ambos os papéis — acessado via ícone no header do dashboard.
 
 ---
 
@@ -184,11 +194,16 @@ Link para o FigJam: <https://www.figma.com/board/v5rMZlJTOg7wYFlcwFJEBt/RoutineA
 
 ```text
 Login → [escolha por papel]
-  ├─ Admin    → Dashboard → Projetos/Tarefas/Usuários/Aprovações
-  └─ Colab    → Dashboard → Minhas tarefas/Criar tarefa (→ fila admin)
+  ├─ Admin    → Dashboard · Projetos · Tarefas · Aprovações · Usuários
+  └─ Colab    → Dashboard · Minhas Tarefas · Projetos · Criar Tarefa (→ fila admin)
 ```
 
 Colaborador que cria tarefa NÃO consegue usá-la até admin aprovar e atribuir peso. Esse é o gate central do produto.
+
+**Divergências conscientes vs. o FigJam:**
+
+- Aba "Notificações" (presente no FigJam em ambos papéis) foi **adiada pra v1.1** — sem backend, seria placeholder vazio.
+- "Definir peso da tarefa" não vira tela dedicada — acontece dentro do fluxo de aprovação (admin aprova e define peso no mesmo passo); ajustes posteriores saem do detalhe da tarefa.
 
 ---
 
@@ -204,6 +219,8 @@ Colaborador que cria tarefa NÃO consegue usá-la até admin aprovar e atribuir 
 - [x] Criação do projeto `rotina-undb`
 - [x] Limpeza do boilerplate (via `npm run reset-project`)
 - [x] Criação da estrutura de pastas `(auth)`, `(admin)`, `(colaborador)`, `projeto`, `tarefa`
+- [x] Theme tokens + componentes base (`Screen`, `GradientButton`, `TextField`, `Label`, `Title`, `Divider`)
+- [x] Telas de autenticação (login, cadastro, esqueci-senha) com mock de redirecionamento por papel
 
 ---
 
