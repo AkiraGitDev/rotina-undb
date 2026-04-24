@@ -1,41 +1,84 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
 export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+  racingRed: '#FF1F29',
+  raspberryPlum: '#BA459F',
+  midnightViolet: '#361F27',
+  pitchBlack: '#0D090A',
+  white: '#FFFFFF',
+
+  text: {
+    primary: 'rgba(255,255,255,1)',
+    secondary: 'rgba(255,255,255,0.75)',
+    muted: 'rgba(255,255,255,0.55)',
+    placeholder: 'rgba(255,255,255,0.45)',
   },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+
+  border: {
+    strong: 'rgba(255,255,255,0.12)',
+    subtle: 'rgba(255,255,255,0.06)',
   },
+
+  surface: {
+    background: '#0D090A',
+    elevated: 'rgba(255,255,255,0.04)',
+  },
+
+  priority: {
+    critica: '#FF1F29',
+    alta: '#BA459F',
+    media: '#361F27',
+    baixa: 'rgba(255,255,255,0.3)',
+  },
+};
+
+export const Gradients = {
+  ctaPrimary: ['#FF1F29', '#BA459F'] as const,
+  heroProgress: ['#FF1F29', '#BA459F'] as const,
+};
+
+export const Spacing = {
+  xs: 4,
+  sm: 8,
+  md: 14,
+  lg: 20,
+  xl: 28,
+  xxl: 48,
+};
+
+export const Radius = {
+  sm: 6,
+  md: 8,
+  lg: 14,
+  xl: 20,
+};
+
+export const FontSize = {
+  xs: 10,
+  sm: 11,
+  base: 13,
+  md: 14,
+  lg: 22,
+  xl: 26,
+  xxl: 44,
+};
+
+export const FontWeight = {
+  regular: '400' as const,
+  medium: '500' as const,
+};
+
+export const LetterSpacing = {
+  tight: -0.8,
+  normal: 0,
+  wide: 0.5,
 };
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
   },
   default: {
