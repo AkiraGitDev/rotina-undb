@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/ui/avatar';
 import { Divider } from '@/components/ui/divider';
@@ -7,11 +7,30 @@ import { Label } from '@/components/ui/label';
 import { Screen } from '@/components/ui/screen';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, Spacing } from '@/constants/theme';
+import { resetAllStores } from '@/lib/store/hydration';
 import { useCurrentUser } from '@/lib/store/users';
 
 export default function PerfilAdminScreen() {
   const router = useRouter();
   const currentUser = useCurrentUser();
+
+  function handleReset() {
+    Alert.alert(
+      'Resetar dados?',
+      'Todos os usuários, projetos e tarefas voltarão ao estado inicial. Essa ação não pode ser desfeita.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Resetar',
+          style: 'destructive',
+          onPress: async () => {
+            await resetAllStores();
+            router.replace('/(auth)/login');
+          },
+        },
+      ],
+    );
+  }
 
   return (
     <Screen>
@@ -35,6 +54,10 @@ export default function PerfilAdminScreen() {
 
         <Text style={styles.logout} onPress={() => router.replace('/(auth)/login')}>
           Sair da conta
+        </Text>
+
+        <Text style={styles.reset} onPress={handleReset}>
+          Resetar dados (demo)
         </Text>
       </ScrollView>
     </Screen>
@@ -70,5 +93,11 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     textAlign: 'center',
     paddingVertical: Spacing.lg,
+  },
+  reset: {
+    color: Colors.text.muted,
+    fontSize: FontSize.base,
+    textAlign: 'center',
+    paddingVertical: Spacing.sm,
   },
 });
