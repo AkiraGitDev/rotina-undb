@@ -1,3 +1,5 @@
+import { useShallow } from 'zustand/react/shallow';
+
 import { useProjectsStore } from './projects';
 import { useTasksStore } from './tasks';
 import { useUsersStore } from './users';
@@ -7,19 +9,19 @@ import { PRIORITY_WEIGHT, Task } from '@/types/task';
 import { User } from '@/types/user';
 
 export function useTasksOfProject(projectId: string): Task[] {
-  return useTasksStore((s) => s.tasks.filter((t) => t.projetoId === projectId));
+  return useTasksStore(useShallow((s) => s.tasks.filter((t) => t.projetoId === projectId)));
 }
 
 export function useTasksOfUser(userId: string): Task[] {
-  return useTasksStore((s) => s.tasks.filter((t) => t.responsavelId === userId));
+  return useTasksStore(useShallow((s) => s.tasks.filter((t) => t.responsavelId === userId)));
 }
 
 export function usePendingTasks(): Task[] {
-  return useTasksStore((s) => s.tasks.filter((t) => t.status === 'pendente'));
+  return useTasksStore(useShallow((s) => s.tasks.filter((t) => t.status === 'pendente')));
 }
 
 export function useProjectsOfUser(userId: string): Project[] {
-  return useProjectsStore((s) => s.projects.filter((p) => p.membroIds.includes(userId)));
+  return useProjectsStore(useShallow((s) => s.projects.filter((p) => p.membroIds.includes(userId))));
 }
 
 export function useUserById(id?: string): User | undefined {
