@@ -9,9 +9,9 @@ import { ProgressHero } from '@/components/ui/progress-hero';
 import { Screen } from '@/components/ui/screen';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, Spacing } from '@/constants/theme';
-import { currentUser, mockProjects, projectsOfUser, tasksOfUser } from '@/lib/mock';
-import { projectProgress } from '@/lib/progress';
-import { PRIORITY_WEIGHT } from '@/types/task';
+import { useProjectsStore } from '@/lib/store/projects';
+import { useProjectsOfUser, useTasksOfUser, userProgress } from '@/lib/store/selectors';
+import { useCurrentUser } from '@/lib/store/users';
 
 function greeting() {
   const h = new Date().getHours();
@@ -22,21 +22,14 @@ function greeting() {
 
 export default function ColaboradorDashboard() {
   const router = useRouter();
+  const currentUser = useCurrentUser();
+  const minhasTarefas = useTasksOfUser(currentUser.id);
+  const projetos = useProjectsOfUser(currentUser.id);
+  const allProjects = useProjectsStore((s) => s.projects);
 
-  const minhasTarefas = tasksOfUser(currentUser.id);
   const ativas = minhasTarefas.filter((t) => t.status === 'aprovada' || t.status === 'em_andamento');
   const pendentes = minhasTarefas.filter((t) => t.status === 'pendente');
-
-  let somaPonderada = 0;
-  let somaPesos = 0;
-  for (const t of ativas) {
-    const peso = t.prioridade ? PRIORITY_WEIGHT[t.prioridade] : 1;
-    somaPonderada += peso * t.cumprimento;
-    somaPesos += peso;
-  }
-  const meuProgresso = somaPesos === 0 ? 0 : Math.round(somaPonderada / somaPesos);
-
-  const projetos = projectsOfUser(currentUser.id);
+  const meuProgresso = userProgress(minhasTarefas);
 
   return (
     <Screen>
@@ -85,7 +78,7 @@ export default function ColaboradorDashboard() {
               >
                 <Text style={styles.taskTitle}>{t.titulo}</Text>
                 <Text style={styles.taskMeta}>
-                  {mockProjects.find((p) => p.id === t.projetoId)?.nome}
+                  {allProjects.find((p) => p.id === t.projetoId)?.nome}
                 </Text>
               </ListItem>
             ))
@@ -99,7 +92,7 @@ export default function ColaboradorDashboard() {
               <ListItem key={t.id} leading={<View style={styles.pendingDot} />}>
                 <Text style={styles.taskTitle}>{t.titulo}</Text>
                 <Text style={styles.taskMeta}>
-                  {mockProjects.find((p) => p.id === t.projetoId)?.nome}
+                  {allProjects.find((p) => p.id === t.projetoId)?.nome}
                 </Text>
               </ListItem>
             ))}
@@ -130,78 +123,23 @@ export default function ColaboradorDashboard() {
 }
 
 const styles = StyleSheet.create({
-  scroll: {
-    paddingTop: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-    gap: Spacing.xl,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-  },
+  scroll: { paddingTop: Spacing.lg, paddingBottom: Spacing.xxl, gap: Spacing.xl },
+  header: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   title: { marginTop: 2 },
   section: { gap: Spacing.xs },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.xs,
-  },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.xs },
   emoji: { fontSize: 22 },
   checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: Colors.border.strong,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 18, height: 18, borderRadius: 4, borderWidth: 1.5,
+    borderColor: Colors.border.strong, alignItems: 'center', justifyContent: 'center',
   },
-  checkboxFill: {
-    width: 10,
-    height: 10,
-    borderRadius: 2,
-    backgroundColor: Colors.racingRed,
-  },
-  trailingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  percent: {
-    color: Colors.text.muted,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.medium,
-  },
-  taskTitle: {
-    color: Colors.text.primary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.medium,
-  },
-  taskMeta: {
-    color: Colors.text.muted,
-    fontSize: FontSize.base,
-    marginTop: 2,
-  },
-  pendingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-  },
-  projectName: {
-    color: Colors.text.primary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.medium,
-  },
-  empty: {
-    color: Colors.text.muted,
-    fontSize: FontSize.base,
-    paddingVertical: Spacing.md,
-  },
-  link: {
-    color: Colors.text.secondary,
-    fontSize: FontSize.base,
-  },
+  checkboxFill: { width: 10, height: 10, borderRadius: 2, backgroundColor: Colors.racingRed },
+  trailingRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+  percent: { color: Colors.text.muted, fontSize: FontSize.sm, fontWeight: FontWeight.medium },
+  taskTitle: { color: Colors.text.primary, fontSize: FontSize.md, fontWeight: FontWeight.medium },
+  taskMeta: { color: Colors.text.muted, fontSize: FontSize.base, marginTop: 2 },
+  pendingDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.3)' },
+  projectName: { color: Colors.text.primary, fontSize: FontSize.md, fontWeight: FontWeight.medium },
+  empty: { color: Colors.text.muted, fontSize: FontSize.base, paddingVertical: Spacing.md },
+  link: { color: Colors.text.secondary, fontSize: FontSize.base },
 });

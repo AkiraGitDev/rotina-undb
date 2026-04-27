@@ -8,11 +8,16 @@ import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
-import { currentUser, projectsOfUser } from '@/lib/mock';
+import { useProjectsOfUser } from '@/lib/store/selectors';
+import { useTasksStore } from '@/lib/store/tasks';
+import { useCurrentUser } from '@/lib/store/users';
 
 export default function CriarTarefaScreen() {
   const router = useRouter();
-  const projetos = projectsOfUser(currentUser.id);
+  const currentUser = useCurrentUser();
+  const projetos = useProjectsOfUser(currentUser.id);
+  const createTask = useTasksStore((s) => s.createTask);
+
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [projetoId, setProjetoId] = useState<string | null>(projetos[0]?.id ?? null);
@@ -24,7 +29,14 @@ export default function CriarTarefaScreen() {
       setErro('Preencha o título e selecione um projeto.');
       return;
     }
-    // TODO: integrar criação real. Tarefa sai como `pendente` até admin aprovar.
+    createTask({
+      titulo: titulo.trim(),
+      descricao: descricao.trim() || undefined,
+      projetoId,
+      autorId: currentUser.id,
+      responsavelId: currentUser.id,
+      status: 'pendente',
+    });
     router.back();
   }
 

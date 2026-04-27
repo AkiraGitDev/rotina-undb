@@ -1,14 +1,22 @@
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { ApproveTaskSheet } from '@/components/approve-task-sheet';
 import { Label } from '@/components/ui/label';
 import { ListItem } from '@/components/ui/list-item';
 import { Screen } from '@/components/ui/screen';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, Spacing } from '@/constants/theme';
-import { mockProjects, mockUsers, pendingTasks } from '@/lib/mock';
+import { useProjectsStore } from '@/lib/store/projects';
+import { usePendingTasks } from '@/lib/store/selectors';
+import { useUsersStore } from '@/lib/store/users';
+import { Task } from '@/types/task';
 
 export default function AprovacoesScreen() {
-  const pendentes = pendingTasks();
+  const pendentes = usePendingTasks();
+  const projects = useProjectsStore((s) => s.projects);
+  const users = useUsersStore((s) => s.users);
+  const [selected, setSelected] = useState<Task | null>(null);
 
   return (
     <Screen>
@@ -23,10 +31,10 @@ export default function AprovacoesScreen() {
             <Text style={styles.empty}>Nada a revisar no momento.</Text>
           ) : (
             pendentes.map((t) => {
-              const projeto = mockProjects.find((p) => p.id === t.projetoId);
-              const autor = mockUsers.find((u) => u.id === t.autorId);
+              const projeto = projects.find((p) => p.id === t.projetoId);
+              const autor = users.find((u) => u.id === t.autorId);
               return (
-                <ListItem key={t.id}>
+                <ListItem key={t.id} onPress={() => setSelected(t)}>
                   <Text style={styles.titulo}>{t.titulo}</Text>
                   <Text style={styles.meta}>
                     {projeto?.nome}
@@ -38,6 +46,8 @@ export default function AprovacoesScreen() {
           )}
         </View>
       </ScrollView>
+
+      <ApproveTaskSheet task={selected} onDismiss={() => setSelected(null)} />
     </Screen>
   );
 }

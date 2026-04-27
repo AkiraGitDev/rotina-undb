@@ -62,6 +62,8 @@ export default function AdminTabsLayout() {
       />
       <Tabs.Screen name="perfil" options={{ href: null }} />
       <Tabs.Screen name="criar-usuario" options={{ href: null }} />
+      <Tabs.Screen name="criar-projeto" options={{ href: null }} />
+      <Tabs.Screen name="criar-tarefa" options={{ href: null }} />
     </Tabs>
   );
 }

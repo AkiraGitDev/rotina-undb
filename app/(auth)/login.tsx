@@ -8,9 +8,12 @@ import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, Spacing } from '@/constants/theme';
+import { useUsersStore } from '@/lib/store/users';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const users = useUsersStore((s) => s.users);
+  const setCurrentUser = useUsersStore((s) => s.setCurrentUser);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,13 +26,19 @@ export default function LoginScreen() {
       return;
     }
     setLoading(true);
-    // TODO: integrar autenticação real. Por ora, roteia por convenção do email.
+    // TODO: integrar autenticação real. Por ora, casa pelo email do mock; senão, decide por heurística.
     setTimeout(() => {
       setLoading(false);
-      const destino = email.toLowerCase().includes('admin')
-        ? '/(admin)/dashboard'
-        : '/(colaborador)/dashboard';
-      router.replace(destino);
+      const match = users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase());
+      if (match) {
+        setCurrentUser(match.id);
+        router.replace(match.role === 'admin' ? '/(admin)/dashboard' : '/(colaborador)/dashboard');
+        return;
+      }
+      const fallbackAdmin = email.toLowerCase().includes('admin');
+      const fallback = users.find((u) => u.role === (fallbackAdmin ? 'admin' : 'colaborador'));
+      if (fallback) setCurrentUser(fallback.id);
+      router.replace(fallbackAdmin ? '/(admin)/dashboard' : '/(colaborador)/dashboard');
     }, 500);
   }
 

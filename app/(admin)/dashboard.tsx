@@ -11,8 +11,13 @@ import { ProgressHero } from '@/components/ui/progress-hero';
 import { Screen } from '@/components/ui/screen';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, LetterSpacing, Spacing } from '@/constants/theme';
-import { currentUser, mockProjects, mockUsers, pendingTasks, tasksOfProject } from '@/lib/mock';
-import { projectProgress } from '@/lib/progress';
+import { useProjectsStore } from '@/lib/store/projects';
+import {
+  projectProgress,
+  usePendingTasks,
+} from '@/lib/store/selectors';
+import { useTasksStore } from '@/lib/store/tasks';
+import { useCurrentUser, useUsersStore } from '@/lib/store/users';
 
 function greeting() {
   const h = new Date().getHours();
@@ -23,13 +28,20 @@ function greeting() {
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const currentUser = useCurrentUser();
+  const projetosRaw = useProjectsStore((s) => s.projects);
+  const tasks = useTasksStore((s) => s.tasks);
+  const users = useUsersStore((s) => s.users);
+  const pendentes = usePendingTasks();
 
-  const projetos = mockProjects.map((p) => ({ ...p, progresso: projectProgress(tasksOfProject(p.id)) }));
-  const progressoGeral = Math.round(
-    projetos.reduce((acc, p) => acc + p.progresso, 0) / (projetos.length || 1),
-  );
-  const pendentes = pendingTasks();
-  const colaboradores = mockUsers.filter((u) => u.id !== currentUser.id);
+  const projetos = projetosRaw.map((p) => ({
+    ...p,
+    progresso: projectProgress(tasks.filter((t) => t.projetoId === p.id)),
+  }));
+  const progressoGeral = projetos.length === 0
+    ? 0
+    : Math.round(projetos.reduce((acc, p) => acc + p.progresso, 0) / projetos.length);
+  const colaboradores = users.filter((u) => u.id !== currentUser.id);
 
   return (
     <Screen>
@@ -86,7 +98,7 @@ export default function AdminDashboard() {
               >
                 <Text style={styles.taskTitle}>{t.titulo}</Text>
                 <Text style={styles.taskMeta}>
-                  {mockProjects.find((p) => p.id === t.projetoId)?.nome}
+                  {projetosRaw.find((p) => p.id === t.projetoId)?.nome}
                 </Text>
               </ListItem>
             ))
@@ -113,73 +125,20 @@ export default function AdminDashboard() {
 }
 
 const styles = StyleSheet.create({
-  scroll: {
-    paddingTop: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-    gap: Spacing.xl,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-  },
-  title: {
-    marginTop: 2,
-  },
-  section: {
-    gap: Spacing.xs,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.xs,
-  },
+  scroll: { paddingTop: Spacing.lg, paddingBottom: Spacing.xxl, gap: Spacing.xl },
+  header: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
+  title: { marginTop: 2 },
+  section: { gap: Spacing.xs },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.xs },
   spacer: { height: Spacing.xs },
   emoji: { fontSize: 22 },
-  projectName: {
-    color: Colors.text.primary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.medium,
-    marginBottom: Spacing.sm,
-  },
-  progressWrap: {
-    marginRight: Spacing.sm,
-  },
-  progressValue: {
-    color: Colors.text.muted,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.medium,
-    letterSpacing: LetterSpacing.wide,
-  },
-  taskTitle: {
-    color: Colors.text.primary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.medium,
-  },
-  taskMeta: {
-    color: Colors.text.muted,
-    fontSize: FontSize.base,
-    marginTop: 2,
-  },
-  empty: {
-    color: Colors.text.muted,
-    fontSize: FontSize.base,
-    paddingVertical: Spacing.md,
-  },
-  link: {
-    color: Colors.text.secondary,
-    fontSize: FontSize.base,
-  },
-  moreRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingTop: Spacing.sm,
-  },
-  teamRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    marginTop: Spacing.sm,
-  },
+  projectName: { color: Colors.text.primary, fontSize: FontSize.md, fontWeight: FontWeight.medium, marginBottom: Spacing.sm },
+  progressWrap: { marginRight: Spacing.sm },
+  progressValue: { color: Colors.text.muted, fontSize: FontSize.sm, fontWeight: FontWeight.medium, letterSpacing: LetterSpacing.wide },
+  taskTitle: { color: Colors.text.primary, fontSize: FontSize.md, fontWeight: FontWeight.medium },
+  taskMeta: { color: Colors.text.muted, fontSize: FontSize.base, marginTop: 2 },
+  empty: { color: Colors.text.muted, fontSize: FontSize.base, paddingVertical: Spacing.md },
+  link: { color: Colors.text.secondary, fontSize: FontSize.base },
+  moreRow: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingTop: Spacing.sm },
+  teamRow: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.sm, flexWrap: 'wrap' },
 });

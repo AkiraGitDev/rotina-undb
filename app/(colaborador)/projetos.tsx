@@ -7,14 +7,18 @@ import { ProgressBar } from '@/components/ui/progress-bar';
 import { Screen } from '@/components/ui/screen';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, LetterSpacing, Spacing } from '@/constants/theme';
-import { currentUser, projectsOfUser, tasksOfProject } from '@/lib/mock';
-import { projectProgress } from '@/lib/progress';
+import { projectProgress, useProjectsOfUser } from '@/lib/store/selectors';
+import { useTasksStore } from '@/lib/store/tasks';
+import { useCurrentUser } from '@/lib/store/users';
 
 export default function ProjetosColabScreen() {
   const router = useRouter();
-  const projetos = projectsOfUser(currentUser.id).map((p) => ({
+  const currentUser = useCurrentUser();
+  const projetosRaw = useProjectsOfUser(currentUser.id);
+  const tasks = useTasksStore((s) => s.tasks);
+  const projetos = projetosRaw.map((p) => ({
     ...p,
-    progresso: projectProgress(tasksOfProject(p.id)),
+    progresso: projectProgress(tasks.filter((t) => t.projetoId === p.id)),
   }));
 
   return (

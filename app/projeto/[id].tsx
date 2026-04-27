@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/ui/avatar';
 import { Divider } from '@/components/ui/divider';
@@ -10,13 +10,21 @@ import { ProgressBar } from '@/components/ui/progress-bar';
 import { Screen } from '@/components/ui/screen';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, LetterSpacing, Spacing } from '@/constants/theme';
-import { mockProjects, mockUsers, tasksOfProject } from '@/lib/mock';
-import { projectProgress } from '@/lib/progress';
+import { useProjectsStore } from '@/lib/store/projects';
+import { projectProgress, useProjectById, useTasksOfProject } from '@/lib/store/selectors';
+import { useTasksStore } from '@/lib/store/tasks';
+import { useCurrentUser, useUsersStore } from '@/lib/store/users';
 
 export default function ProjetoDetalhe() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const projeto = mockProjects.find((p) => p.id === id);
+  const projeto = useProjectById(id);
+  const tarefas = useTasksOfProject(id ?? '');
+  const users = useUsersStore((s) => s.users);
+  const currentUser = useCurrentUser();
+  const removeProject = useProjectsStore((s) => s.removeProject);
+  const removeTask = useTasksStore((s) => s.removeTask);
+
   if (!projeto) {
     return (
       <Screen>
@@ -24,13 +32,40 @@ export default function ProjetoDetalhe() {
       </Screen>
     );
   }
-  const tarefas = tasksOfProject(projeto.id);
+  const isAdmin = currentUser.role === 'admin';
   const progresso = projectProgress(tarefas);
-  const membros = mockUsers.filter((u) => projeto.membroIds.includes(u.id));
+  const membros = users.filter((u) => projeto.membroIds.includes(u.id));
+
+  function handleDelete() {
+    if (!projeto) return;
+    Alert.alert(
+      'Apagar projeto?',
+      `"${projeto.nome}" e todas as suas ${tarefas.length} tarefas serão removidas.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Apagar',
+          style: 'destructive',
+          onPress: () => {
+            tarefas.forEach((t) => removeTask(t.id));
+            removeProject(projeto.id);
+            router.back();
+          },
+        },
+      ],
+    );
+  }
 
   return (
     <Screen>
-      <Stack.Screen options={{ headerShown: true, title: '', headerStyle: { backgroundColor: Colors.pitchBlack }, headerTintColor: Colors.white }} />
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: '',
+          headerStyle: { backgroundColor: Colors.pitchBlack },
+          headerTintColor: Colors.white,
+        }}
+      />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.emoji}>{projeto.emoji}</Text>
@@ -74,7 +109,14 @@ export default function ProjetoDetalhe() {
               </Text>
             </ListItem>
           ))}
+          {tarefas.length === 0 ? <Text style={styles.empty}>Nenhuma tarefa ainda.</Text> : null}
         </View>
+
+        {isAdmin ? (
+          <Pressable onPress={handleDelete} style={styles.deleteBtn}>
+            <Text style={styles.deleteLabel}>Apagar projeto</Text>
+          </Pressable>
+        ) : null}
       </ScrollView>
     </Screen>
   );
@@ -90,9 +132,12 @@ const styles = StyleSheet.create({
   progressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   progressValue: { color: Colors.white, fontSize: FontSize.lg, fontWeight: FontWeight.medium, letterSpacing: LetterSpacing.tight },
   section: { gap: Spacing.sm, paddingVertical: Spacing.sm },
-  membersRow: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.sm },
+  membersRow: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.sm, flexWrap: 'wrap' },
   taskTitle: { color: Colors.text.primary, fontSize: FontSize.md, fontWeight: FontWeight.medium },
   taskMeta: { color: Colors.text.muted, fontSize: FontSize.base, marginTop: 2, textTransform: 'capitalize' },
   taskPercent: { color: Colors.text.muted, fontSize: FontSize.sm },
+  empty: { color: Colors.text.muted, fontSize: FontSize.base, paddingVertical: Spacing.sm },
+  deleteBtn: { paddingVertical: Spacing.lg, alignItems: 'center', marginTop: Spacing.lg },
+  deleteLabel: { color: Colors.racingRed, fontSize: FontSize.md, fontWeight: FontWeight.medium },
   notFound: { color: Colors.text.muted, fontSize: FontSize.md, paddingTop: Spacing.xxl },
 });

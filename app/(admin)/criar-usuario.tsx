@@ -8,9 +8,11 @@ import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Title } from '@/components/ui/title';
 import { Spacing } from '@/constants/theme';
+import { useUsersStore } from '@/lib/store/users';
 
 export default function CriarUsuarioScreen() {
   const router = useRouter();
+  const createUser = useUsersStore((s) => s.createUser);
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [erro, setErro] = useState<string | null>(null);
@@ -21,7 +23,7 @@ export default function CriarUsuarioScreen() {
       setErro('Preencha nome e email.');
       return;
     }
-    // TODO: integrar criação real.
+    createUser({ nome: nome.trim(), email: email.trim().toLowerCase(), role: 'colaborador' });
     router.back();
   }
 

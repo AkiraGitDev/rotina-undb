@@ -7,10 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Screen } from '@/components/ui/screen';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, Spacing } from '@/constants/theme';
-import { currentUser } from '@/lib/mock';
+import { useCurrentUser } from '@/lib/store/users';
 
 export default function PerfilAdminScreen() {
   const router = useRouter();
+  const currentUser = useCurrentUser();
 
   return (
     <Screen>
@@ -19,14 +20,14 @@ export default function PerfilAdminScreen() {
           <Avatar nome={currentUser.nome} color={currentUser.avatarColor} size={72} />
           <Title style={styles.title}>{currentUser.nome}</Title>
           <Text style={styles.email}>{currentUser.email}</Text>
-          <Label>Administrador</Label>
+          <Label>{currentUser.role === 'admin' ? 'Administrador' : 'Colaborador'}</Label>
         </View>
 
         <Divider />
 
         <View style={styles.section}>
           <PropertyRow label="Empresa" value="Acme Ltda." />
-          <PropertyRow label="Papel" value="Administrador" />
+          <PropertyRow label="Papel" value={currentUser.role === 'admin' ? 'Administrador' : 'Colaborador'} />
           <PropertyRow label="Membro desde" value="março/2026" />
         </View>
 
@@ -62,16 +63,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.border.subtle,
   },
-  propertyLabel: {
-    width: 70,
-    color: Colors.text.muted,
-    fontSize: FontSize.base,
-  },
-  propertyValue: {
-    flex: 1,
-    color: Colors.text.primary,
-    fontSize: FontSize.md,
-  },
+  propertyLabel: { width: 70, color: Colors.text.muted, fontSize: FontSize.base },
+  propertyValue: { flex: 1, color: Colors.text.primary, fontSize: FontSize.md },
   logout: {
     color: Colors.racingRed,
     fontSize: FontSize.md,
