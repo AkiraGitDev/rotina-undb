@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/ui/avatar';
 import { GradientButton } from '@/components/ui/gradient-button';
+import { KeyboardSafeScroll } from '@/components/ui/keyboard-safe-scroll';
 import { Label } from '@/components/ui/label';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
@@ -47,8 +48,7 @@ export default function CriarProjetoScreen() {
 
   return (
     <Screen>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardSafeScroll contentContainerStyle={styles.scroll}>
           <View style={styles.header}>
             <Label>Novo projeto</Label>
             <Title style={styles.title}>Criar projeto</Title>
@@ -117,14 +117,12 @@ export default function CriarProjetoScreen() {
 
             <GradientButton label="Criar projeto" onPress={handleCriar} style={styles.cta} />
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardSafeScroll>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   scroll: { flexGrow: 1, paddingVertical: Spacing.xxl, gap: Spacing.xl },
   header: { gap: Spacing.sm },
   title: { marginTop: Spacing.sm },

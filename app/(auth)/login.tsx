@@ -1,8 +1,9 @@
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { GradientButton } from '@/components/ui/gradient-button';
+import { KeyboardSafeScroll } from '@/components/ui/keyboard-safe-scroll';
 import { Label } from '@/components/ui/label';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
@@ -44,59 +45,53 @@ export default function LoginScreen() {
 
   return (
     <Screen>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flex}
-      >
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <View style={styles.header}>
-            <Label>Rotina</Label>
-            <Title style={styles.title}>Entrar na sua conta</Title>
-            <Text style={styles.subtitle}>
-              Organize tarefas e projetos da sua equipe em um só lugar.
-            </Text>
-          </View>
+      <KeyboardSafeScroll contentContainerStyle={styles.scroll}>
+        <View style={styles.header}>
+          <Label>Rotina</Label>
+          <Title style={styles.title}>Entrar na sua conta</Title>
+          <Text style={styles.subtitle}>
+            Organize tarefas e projetos da sua equipe em um só lugar.
+          </Text>
+        </View>
 
-          <View style={styles.form}>
-            <TextField
-              label="Email"
-              placeholder="voce@empresa.com"
-              keyboardType="email-address"
-              autoComplete="email"
-              value={email}
-              onChangeText={setEmail}
-            />
-            <TextField
-              label="Senha"
-              placeholder="••••••••"
-              secureTextEntry
-              autoComplete="password"
-              value={senha}
-              onChangeText={setSenha}
-              error={erro ?? undefined}
-            />
+        <View style={styles.form}>
+          <TextField
+            label="Email"
+            placeholder="voce@empresa.com"
+            keyboardType="email-address"
+            autoComplete="email"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <TextField
+            label="Senha"
+            placeholder="••••••••"
+            secureTextEntry
+            autoComplete="password"
+            value={senha}
+            onChangeText={setSenha}
+            error={erro ?? undefined}
+          />
 
-            <Link href="/(auth)/esqueci-senha" style={styles.linkRight}>
-              <Text style={styles.linkText}>Esqueci minha senha</Text>
-            </Link>
+          <Link href="/(auth)/esqueci-senha" style={styles.linkRight}>
+            <Text style={styles.linkText}>Esqueci minha senha</Text>
+          </Link>
 
-            <GradientButton label="Entrar" onPress={handleEntrar} loading={loading} style={styles.cta} />
-          </View>
+          <GradientButton label="Entrar" onPress={handleEntrar} loading={loading} style={styles.cta} />
+        </View>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Primeira vez aqui? </Text>
-            <Link href="/(auth)/cadastro">
-              <Text style={styles.footerLink}>Cadastrar empresa</Text>
-            </Link>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Primeira vez aqui? </Text>
+          <Link href="/(auth)/cadastro">
+            <Text style={styles.footerLink}>Cadastrar empresa</Text>
+          </Link>
+        </View>
+      </KeyboardSafeScroll>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   scroll: {
     flexGrow: 1,
     justifyContent: 'space-between',

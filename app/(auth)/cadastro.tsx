@@ -1,8 +1,9 @@
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { GradientButton } from '@/components/ui/gradient-button';
+import { KeyboardSafeScroll } from '@/components/ui/keyboard-safe-scroll';
 import { Label } from '@/components/ui/label';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
@@ -57,11 +58,7 @@ export default function CadastroScreen() {
 
   return (
     <Screen>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flex}
-      >
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardSafeScroll contentContainerStyle={styles.scroll}>
           <View style={styles.header}>
             <Label>Criar conta</Label>
             <Title style={styles.title}>Cadastrar empresa</Title>
@@ -123,14 +120,12 @@ export default function CadastroScreen() {
               <Text style={styles.footerLink}>Entrar</Text>
             </Link>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardSafeScroll>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   scroll: {
     flexGrow: 1,
     paddingVertical: Spacing.xxl,
