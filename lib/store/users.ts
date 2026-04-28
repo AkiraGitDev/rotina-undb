@@ -46,7 +46,7 @@ export const useUsersStore = create<UsersState>()(
       removeUser: (id) =>
         set((state) => ({ users: state.users.filter((u) => u.id !== id) })),
       setCurrentUser: (id) => set({ currentUserId: id }),
-      reset: () => set({ users: seed, currentUserId: 'u1' }),
+      reset: () => set({ users: [], currentUserId: '' }),
     }),
     {
       name: 'rotina:users',
@@ -56,8 +56,16 @@ export const useUsersStore = create<UsersState>()(
   ),
 );
 
+const ANONYMOUS_USER: User = {
+  id: '',
+  nome: '—',
+  email: '',
+  role: 'colaborador',
+  avatarColor: Colors.midnightViolet,
+};
+
 export function useCurrentUser(): User {
   const users = useUsersStore((s) => s.users);
   const id = useUsersStore((s) => s.currentUserId);
-  return users.find((u) => u.id === id) ?? users[0]!;
+  return users.find((u) => u.id === id) ?? users[0] ?? ANONYMOUS_USER;
 }

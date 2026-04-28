@@ -1,6 +1,8 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { ProjectMembersSheet } from '@/components/project-members-sheet';
 import { Avatar } from '@/components/ui/avatar';
 import { Divider } from '@/components/ui/divider';
 import { Label } from '@/components/ui/label';
@@ -24,6 +26,7 @@ export default function ProjetoDetalhe() {
   const currentUser = useCurrentUser();
   const removeProject = useProjectsStore((s) => s.removeProject);
   const removeTask = useTasksStore((s) => s.removeTask);
+  const [editingMembers, setEditingMembers] = useState(false);
 
   if (!projeto) {
     return (
@@ -84,12 +87,23 @@ export default function ProjetoDetalhe() {
         <Divider />
 
         <View style={styles.section}>
-          <Label>Membros</Label>
-          <View style={styles.membersRow}>
-            {membros.map((u) => (
-              <Avatar key={u.id} nome={u.nome} color={u.avatarColor} size={36} />
-            ))}
+          <View style={styles.sectionHeader}>
+            <Label>Membros ({membros.length})</Label>
+            {isAdmin ? (
+              <Pressable onPress={() => setEditingMembers(true)} hitSlop={8}>
+                <Text style={styles.link}>Gerenciar</Text>
+              </Pressable>
+            ) : null}
           </View>
+          {membros.length === 0 ? (
+            <Text style={styles.empty}>Nenhum membro ainda.</Text>
+          ) : (
+            <View style={styles.membersRow}>
+              {membros.map((u) => (
+                <Avatar key={u.id} nome={u.nome} color={u.avatarColor} size={36} />
+              ))}
+            </View>
+          )}
         </View>
 
         <Divider />
@@ -118,6 +132,11 @@ export default function ProjetoDetalhe() {
           </Pressable>
         ) : null}
       </ScrollView>
+
+      <ProjectMembersSheet
+        projectId={editingMembers ? projeto.id : null}
+        onDismiss={() => setEditingMembers(false)}
+      />
     </Screen>
   );
 }
@@ -132,6 +151,8 @@ const styles = StyleSheet.create({
   progressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   progressValue: { color: Colors.white, fontSize: FontSize.lg, fontWeight: FontWeight.medium, letterSpacing: LetterSpacing.tight },
   section: { gap: Spacing.sm, paddingVertical: Spacing.sm },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  link: { color: Colors.text.secondary, fontSize: FontSize.base },
   membersRow: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.sm, flexWrap: 'wrap' },
   taskTitle: { color: Colors.text.primary, fontSize: FontSize.md, fontWeight: FontWeight.medium },
   taskMeta: { color: Colors.text.muted, fontSize: FontSize.base, marginTop: 2, textTransform: 'capitalize' },

@@ -86,7 +86,7 @@ export const useTasksStore = create<TasksState>()(
           }),
         }));
       },
-      reset: () => set({ tasks: seed }),
+      reset: () => set({ tasks: [] }),
     }),
     {
       name: 'rotina:tasks',

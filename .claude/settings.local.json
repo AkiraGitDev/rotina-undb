@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npx tsc *)",
       "Bash(npm install *)",
-      "Bash(npx expo *)"
+      "Bash(npx expo *)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/zustand/package.json'\\).version\\)\")"
     ]
   }
 }

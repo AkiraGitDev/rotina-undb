@@ -32,7 +32,7 @@ export const useProjectsStore = create<ProjectsState>()(
         set((state) => ({ projects: state.projects.map((p) => (p.id === id ? { ...p, ...patch } : p)) })),
       removeProject: (id) =>
         set((state) => ({ projects: state.projects.filter((p) => p.id !== id) })),
-      reset: () => set({ projects: seed }),
+      reset: () => set({ projects: [] }),
     }),
     {
       name: 'rotina:projects',

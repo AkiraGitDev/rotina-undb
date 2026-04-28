@@ -8,9 +8,14 @@ import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, Spacing } from '@/constants/theme';
+import { useUsersStore } from '@/lib/store/users';
 
 export default function CadastroScreen() {
   const router = useRouter();
+  const users = useUsersStore((s) => s.users);
+  const createUser = useUsersStore((s) => s.createUser);
+  const setCurrentUser = useUsersStore((s) => s.setCurrentUser);
+
   const [nomeEmpresa, setNomeEmpresa] = useState('');
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -33,12 +38,21 @@ export default function CadastroScreen() {
       setErro('As senhas não coincidem.');
       return;
     }
+    const emailNormalizado = email.trim().toLowerCase();
+    if (users.some((u) => u.email.toLowerCase() === emailNormalizado)) {
+      setErro('Já existe um usuário com esse email.');
+      return;
+    }
     setLoading(true);
-    // TODO: integrar cadastro real. Primeiro usuário da empresa vira admin.
     setTimeout(() => {
+      // Primeiro usuário da empresa vira admin; demais via cadastro também viram admin
+      // (no fluxo real, só o primeiro deveria — colaboradores entram via convite do admin).
+      const role = users.length === 0 ? 'admin' : 'admin';
+      const novo = createUser({ nome: nome.trim(), email: emailNormalizado, role });
+      setCurrentUser(novo.id);
       setLoading(false);
       router.replace('/(admin)/dashboard');
-    }, 500);
+    }, 300);
   }
 
   return (

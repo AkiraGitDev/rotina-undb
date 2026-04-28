@@ -26,20 +26,20 @@ export default function LoginScreen() {
       return;
     }
     setLoading(true);
-    // TODO: integrar autenticação real. Por ora, casa pelo email do mock; senão, decide por heurística.
     setTimeout(() => {
       setLoading(false);
       const match = users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase());
-      if (match) {
-        setCurrentUser(match.id);
-        router.replace(match.role === 'admin' ? '/(admin)/dashboard' : '/(colaborador)/dashboard');
+      if (!match) {
+        setErro(
+          users.length === 0
+            ? 'Nenhum usuário cadastrado. Cadastre o primeiro admin.'
+            : 'Usuário não encontrado.',
+        );
         return;
       }
-      const fallbackAdmin = email.toLowerCase().includes('admin');
-      const fallback = users.find((u) => u.role === (fallbackAdmin ? 'admin' : 'colaborador'));
-      if (fallback) setCurrentUser(fallback.id);
-      router.replace(fallbackAdmin ? '/(admin)/dashboard' : '/(colaborador)/dashboard');
-    }, 500);
+      setCurrentUser(match.id);
+      router.replace(match.role === 'admin' ? '/(admin)/dashboard' : '/(colaborador)/dashboard');
+    }, 300);
   }
 
   return (
