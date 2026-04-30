@@ -9,6 +9,7 @@ import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, Spacing } from '@/constants/theme';
+import { sendReset } from '@/lib/auth';
 
 export default function EsqueciSenhaScreen() {
   const router = useRouter();
@@ -24,11 +25,17 @@ export default function EsqueciSenhaScreen() {
       return;
     }
     setLoading(true);
-    // TODO: integrar envio real de email de recuperação.
-    setTimeout(() => {
+    try {
+      await sendReset(email.trim().toLowerCase());
+    } catch (e) {
+      // Boa prática: não revelar se o email existe ou não (anti-enumeration).
+      // Erros genuínos de rede a gente também trata como sucesso visual —
+      // se o link não chegar, o usuário tenta de novo.
+      console.warn('[esqueci-senha] sendReset:', e);
+    } finally {
       setLoading(false);
       setEnviado(true);
-    }, 500);
+    }
   }
 
   return (

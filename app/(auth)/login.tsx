@@ -1,4 +1,4 @@
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -9,12 +9,9 @@ import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, Spacing } from '@/constants/theme';
-import { useUsersStore } from '@/lib/store/users';
+import { describeAuthError, signIn } from '@/lib/auth';
 
 export default function LoginScreen() {
-  const router = useRouter();
-  const users = useUsersStore((s) => s.users);
-  const setCurrentUser = useUsersStore((s) => s.setCurrentUser);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,20 +24,16 @@ export default function LoginScreen() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await signIn(email.trim().toLowerCase(), senha);
+      // Redirecionamento acontece automaticamente: o onAuthStateChanged no
+      // useFirebaseBootstrap atualiza currentUserId, e index.tsx (ou o gate
+      // do _layout) cuida da rota. Não precisamos chamar router.replace aqui.
+    } catch (e) {
+      setErro(describeAuthError(e));
+    } finally {
       setLoading(false);
-      const match = users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase());
-      if (!match) {
-        setErro(
-          users.length === 0
-            ? 'Nenhum usuário cadastrado. Cadastre o primeiro admin.'
-            : 'Usuário não encontrado.',
-        );
-        return;
-      }
-      setCurrentUser(match.id);
-      router.replace(match.role === 'admin' ? '/(admin)/dashboard' : '/(colaborador)/dashboard');
-    }, 300);
+    }
   }
 
   return (

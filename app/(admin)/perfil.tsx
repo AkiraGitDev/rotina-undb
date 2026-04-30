@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/ui/avatar';
@@ -7,25 +6,34 @@ import { Label } from '@/components/ui/label';
 import { Screen } from '@/components/ui/screen';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, Spacing } from '@/constants/theme';
+import { signOutCurrent } from '@/lib/auth';
 import { resetAllStores } from '@/lib/store/hydration';
 import { useCurrentUser } from '@/lib/store/users';
 
 export default function PerfilAdminScreen() {
-  const router = useRouter();
   const currentUser = useCurrentUser();
+
+  // Faz signOut no Firebase. O onAuthStateChanged dispara, currentUserId vai
+  // pra '', e o (auth)/_layout deixa o usuário ver login.
+  async function handleLogout() {
+    try {
+      await signOutCurrent();
+    } catch (e) {
+      console.warn('[perfil] signOut:', e);
+    }
+  }
 
   function handleReset() {
     Alert.alert(
-      'Resetar dados?',
-      'Todos os usuários, projetos e tarefas voltarão ao estado inicial. Essa ação não pode ser desfeita.',
+      'Apagar dados locais?',
+      'Projetos e tarefas locais serão apagados e você sairá da conta. Os usuários cadastrados no Firebase continuam.',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Resetar',
+          text: 'Apagar',
           style: 'destructive',
           onPress: async () => {
             await resetAllStores();
-            router.replace('/(auth)/login');
           },
         },
       ],
@@ -52,12 +60,12 @@ export default function PerfilAdminScreen() {
 
         <Divider />
 
-        <Text style={styles.logout} onPress={() => router.replace('/(auth)/login')}>
+        <Text style={styles.logout} onPress={handleLogout}>
           Sair da conta
         </Text>
 
         <Text style={styles.reset} onPress={handleReset}>
-          Resetar dados (demo)
+          Apagar dados locais (demo)
         </Text>
       </ScrollView>
     </Screen>

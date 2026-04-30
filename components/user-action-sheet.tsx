@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, Spacing } from '@/constants/theme';
 import { useUsersStore } from '@/lib/store/users';
+import { removeUserDoc, setUserRole } from '@/lib/users-firestore';
 import { User } from '@/types/user';
 
 type Props = {
@@ -14,23 +15,33 @@ type Props = {
 };
 
 export function UserActionSheet({ user, onDismiss }: Props) {
-  const setRole = useUsersStore((s) => s.setRole);
-  const removeUser = useUsersStore((s) => s.removeUser);
   const currentUserId = useUsersStore((s) => s.currentUserId);
 
   if (!user) return <BottomSheet visible={false} onDismiss={onDismiss} />;
 
   const isSelf = user.id === currentUserId;
 
-  function handleElevate() {
+  // Mutações vão direto pro Firestore. O onSnapshot do bootstrap
+  // reflete a mudança no store e UI atualiza sozinho.
+  async function handleElevate() {
     if (!user) return;
-    setRole(user.id, user.role === 'admin' ? 'colaborador' : 'admin');
+    try {
+      await setUserRole(user.id, user.role === 'admin' ? 'colaborador' : 'admin');
+    } catch (e) {
+      console.warn('[user-action-sheet] setUserRole:', e);
+    }
     onDismiss();
   }
 
-  function handleRemove() {
+  async function handleRemove() {
     if (!user) return;
-    removeUser(user.id);
+    try {
+      await removeUserDoc(user.id);
+      // Nota: a credencial dele no Firebase Auth permanece — só dá pra
+      // apagar via Admin SDK (Cloud Function). Pra demo, OK.
+    } catch (e) {
+      console.warn('[user-action-sheet] removeUserDoc:', e);
+    }
     onDismiss();
   }
 

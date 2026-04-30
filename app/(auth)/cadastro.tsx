@@ -1,4 +1,4 @@
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -9,14 +9,9 @@ import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, Spacing } from '@/constants/theme';
-import { useUsersStore } from '@/lib/store/users';
+import { describeAuthError, hasAnyUser, signUpAdmin } from '@/lib/auth';
 
 export default function CadastroScreen() {
-  const router = useRouter();
-  const users = useUsersStore((s) => s.users);
-  const createUser = useUsersStore((s) => s.createUser);
-  const setCurrentUser = useUsersStore((s) => s.setCurrentUser);
-
   const [nomeEmpresa, setNomeEmpresa] = useState('');
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -39,21 +34,22 @@ export default function CadastroScreen() {
       setErro('As senhas não coincidem.');
       return;
     }
-    const emailNormalizado = email.trim().toLowerCase();
-    if (users.some((u) => u.email.toLowerCase() === emailNormalizado)) {
-      setErro('Já existe um usuário com esse email.');
-      return;
-    }
     setLoading(true);
-    setTimeout(() => {
-      // Primeiro usuário da empresa vira admin; demais via cadastro também viram admin
-      // (no fluxo real, só o primeiro deveria — colaboradores entram via convite do admin).
-      const role = users.length === 0 ? 'admin' : 'admin';
-      const novo = createUser({ nome: nome.trim(), email: emailNormalizado, role });
-      setCurrentUser(novo.id);
+    try {
+      // Cadastro público só vale pra primeiro admin. Se já existe alguém,
+      // bloqueia — colaborador entra via convite do admin, não daqui.
+      const jaExiste = await hasAnyUser();
+      if (jaExiste) {
+        setErro('Esta empresa já possui um administrador. Peça para ele criar sua conta na seção de Usuários.');
+        return;
+      }
+      await signUpAdmin(nome.trim(), email.trim().toLowerCase(), senha);
+      // Redirecionamento automático via onAuthStateChanged → (auth)/_layout
+    } catch (e) {
+      setErro(describeAuthError(e));
+    } finally {
       setLoading(false);
-      router.replace('/(admin)/dashboard');
-    }, 300);
+    }
   }
 
   return (

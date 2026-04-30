@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/ui/avatar';
@@ -7,11 +6,19 @@ import { Label } from '@/components/ui/label';
 import { Screen } from '@/components/ui/screen';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, Spacing } from '@/constants/theme';
+import { signOutCurrent } from '@/lib/auth';
 import { useCurrentUser } from '@/lib/store/users';
 
 export default function PerfilColabScreen() {
-  const router = useRouter();
   const currentUser = useCurrentUser();
+
+  async function handleLogout() {
+    try {
+      await signOutCurrent();
+    } catch (e) {
+      console.warn('[perfil-colab] signOut:', e);
+    }
+  }
 
   return (
     <Screen>
@@ -33,7 +40,7 @@ export default function PerfilColabScreen() {
 
         <Divider />
 
-        <Text style={styles.logout} onPress={() => router.replace('/(auth)/login')}>
+        <Text style={styles.logout} onPress={handleLogout}>
           Sair da conta
         </Text>
       </ScrollView>
