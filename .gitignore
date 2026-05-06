@@ -43,5 +43,6 @@ app-example
 /android
 
 # Firebase
-google-services.json
-GoogleService-Info.plist
+# google-services.json e GoogleService-Info.plist são commitados de propósito —
+# EAS Build só envia arquivos do git, e esses contêm só ids públicos.
+# Segurança real vem das security rules do Firestore.

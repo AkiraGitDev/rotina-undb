@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "762099168967",
+    "project_id": "rotina-undb-0",
+    "storage_bucket": "rotina-undb-0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762099168967:android:65a5e33eb427a86db1b0e2",
+        "android_client_info": {
+          "package_name": "com.akiraexpodev.rotinaundb"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "762099168967-7sfkmmt8gblt6voc5avo3sj7fgtev65n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEnmDLrnYxRr2RVOj4lj61ptbz9CEHo24"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "762099168967-7sfkmmt8gblt6voc5avo3sj7fgtev65n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
