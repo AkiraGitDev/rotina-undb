@@ -5,11 +5,7 @@ import { persistStorage } from './storage';
 
 import { Project } from '@/types/project';
 
-const seed: Project[] = [
-  { id: 'p1', nome: 'App Rotina', descricao: 'App interno de gestão', emoji: '📱', membroIds: ['u1', 'u2', 'u3'], criadoEm: '2026-03-01' },
-  { id: 'p2', nome: 'Site institucional', descricao: 'Rebranding completo', emoji: '🚀', membroIds: ['u1', 'u4'], criadoEm: '2026-03-10' },
-  { id: 'p3', nome: 'Integração ERP', emoji: '✨', membroIds: ['u1', 'u2', 'u4'], criadoEm: '2026-04-05' },
-];
+const seed: Project[] = [];
 
 type ProjectsState = {
   projects: Project[];

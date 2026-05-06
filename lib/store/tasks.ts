@@ -5,16 +5,7 @@ import { persistStorage } from './storage';
 
 import { Task, TaskPriority } from '@/types/task';
 
-const seed: Task[] = [
-  { id: 't1', titulo: 'Implementar login', projetoId: 'p1', autorId: 'u2', responsavelId: 'u2', status: 'em_andamento', prioridade: 'alta', cumprimento: 80, criadaEm: '2026-04-10', atualizadaEm: '2026-04-22' },
-  { id: 't2', titulo: 'Desenhar dashboard', projetoId: 'p1', autorId: 'u1', responsavelId: 'u3', status: 'concluida', prioridade: 'media', cumprimento: 100, criadaEm: '2026-04-05', atualizadaEm: '2026-04-20' },
-  { id: 't3', titulo: 'Configurar CI/CD', projetoId: 'p1', autorId: 'u2', responsavelId: 'u2', status: 'pendente', cumprimento: 0, criadaEm: '2026-04-23', atualizadaEm: '2026-04-23' },
-  { id: 't4', titulo: 'Migrar landing page', projetoId: 'p2', autorId: 'u4', responsavelId: 'u4', status: 'em_andamento', prioridade: 'critica', cumprimento: 45, criadaEm: '2026-04-12', atualizadaEm: '2026-04-23' },
-  { id: 't5', titulo: 'Refazer hero section', projetoId: 'p2', autorId: 'u4', responsavelId: 'u4', status: 'pendente', cumprimento: 0, criadaEm: '2026-04-24', atualizadaEm: '2026-04-24' },
-  { id: 't6', titulo: 'Mapear endpoints ERP', projetoId: 'p3', autorId: 'u2', responsavelId: 'u2', status: 'aprovada', prioridade: 'alta', cumprimento: 20, criadaEm: '2026-04-15', atualizadaEm: '2026-04-22' },
-  { id: 't7', titulo: 'POC integração SAP', projetoId: 'p3', autorId: 'u4', responsavelId: 'u4', status: 'em_andamento', prioridade: 'media', cumprimento: 30, criadaEm: '2026-04-18', atualizadaEm: '2026-04-23' },
-  { id: 't8', titulo: 'Revisar escopo do módulo financeiro', projetoId: 'p3', autorId: 'u4', responsavelId: 'u4', status: 'pendente', cumprimento: 0, criadaEm: '2026-04-24', atualizadaEm: '2026-04-24' },
-];
+const seed: Task[] = [];
 
 type CreateInput = {
   titulo: string;

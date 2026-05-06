@@ -1,9 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 
 import { Colors, FontSize, FontWeight, LetterSpacing } from '@/constants/theme';
+import { useUsersStore } from '@/lib/store/users';
 
 export default function AdminTabsLayout() {
+  // Guard: se não está logado, manda pra login.
+  // Cobre o caso do logout — quando currentUserId vira '', este layout
+  // re-renderiza e o Redirect dispara automaticamente.
+  const currentUserId = useUsersStore((s) => s.currentUserId);
+  if (!currentUserId) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{

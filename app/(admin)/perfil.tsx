@@ -1,4 +1,4 @@
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/ui/avatar';
 import { Divider } from '@/components/ui/divider';
@@ -7,37 +7,17 @@ import { Screen } from '@/components/ui/screen';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, Spacing } from '@/constants/theme';
 import { signOutCurrent } from '@/lib/auth';
-import { resetAllStores } from '@/lib/store/hydration';
 import { useCurrentUser } from '@/lib/store/users';
 
 export default function PerfilAdminScreen() {
   const currentUser = useCurrentUser();
 
-  // Faz signOut no Firebase. O onAuthStateChanged dispara, currentUserId vai
-  // pra '', e o (auth)/_layout deixa o usuário ver login.
   async function handleLogout() {
     try {
       await signOutCurrent();
     } catch (e) {
       console.warn('[perfil] signOut:', e);
     }
-  }
-
-  function handleReset() {
-    Alert.alert(
-      'Apagar dados locais?',
-      'Projetos e tarefas locais serão apagados e você sairá da conta. Os usuários cadastrados no Firebase continuam.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Apagar',
-          style: 'destructive',
-          onPress: async () => {
-            await resetAllStores();
-          },
-        },
-      ],
-    );
   }
 
   return (
@@ -62,10 +42,6 @@ export default function PerfilAdminScreen() {
 
         <Text style={styles.logout} onPress={handleLogout}>
           Sair da conta
-        </Text>
-
-        <Text style={styles.reset} onPress={handleReset}>
-          Apagar dados locais (demo)
         </Text>
       </ScrollView>
     </Screen>
@@ -101,11 +77,5 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     textAlign: 'center',
     paddingVertical: Spacing.lg,
-  },
-  reset: {
-    color: Colors.text.muted,
-    fontSize: FontSize.base,
-    textAlign: 'center',
-    paddingVertical: Spacing.sm,
   },
 });
