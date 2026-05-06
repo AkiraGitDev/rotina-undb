@@ -1,0 +1,72 @@
+// app.config.js — substitui app.json pra permitir lógica condicional.
+// O caminho do google-services.json vem do env var GOOGLE_SERVICES_JSON
+// (configurado como secret no EAS), com fallback pro arquivo local
+// (./google-services.json, gitignored) durante desenvolvimento.
+module.exports = {
+  expo: {
+    name: 'rotina-undb',
+    slug: 'rotina-undb',
+    version: '1.0.0',
+    orientation: 'portrait',
+    icon: './assets/images/icon.png',
+    scheme: 'rotina',
+    userInterfaceStyle: 'dark',
+    newArchEnabled: true,
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: 'com.akiraexpodev.rotinaundb',
+    },
+    android: {
+      adaptiveIcon: {
+        backgroundColor: '#E6F4FE',
+        foregroundImage: './assets/images/android-icon-foreground.png',
+        backgroundImage: './assets/images/android-icon-background.png',
+        monochromeImage: './assets/images/android-icon-monochrome.png',
+      },
+      edgeToEdgeEnabled: true,
+      predictiveBackGestureEnabled: false,
+      package: 'com.akiraexpodev.rotinaundb',
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
+    },
+    web: {
+      output: 'static',
+      favicon: './assets/images/favicon.png',
+    },
+    plugins: [
+      'expo-router',
+      [
+        'expo-splash-screen',
+        {
+          image: './assets/images/splash-icon.png',
+          imageWidth: 200,
+          resizeMode: 'contain',
+          backgroundColor: '#ffffff',
+          dark: {
+            backgroundColor: '#000000',
+          },
+        },
+      ],
+      'expo-web-browser',
+      [
+        'expo-build-properties',
+        {
+          ios: {
+            useFrameworks: 'static',
+          },
+        },
+      ],
+      '@react-native-firebase/app',
+      '@react-native-firebase/auth',
+    ],
+    experiments: {
+      typedRoutes: true,
+      reactCompiler: true,
+    },
+    extra: {
+      router: {},
+      eas: {
+        projectId: 'a5576a05-f9d8-4151-9f5c-29199632f2eb',
+      },
+    },
+  },
+};

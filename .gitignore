@@ -42,7 +42,7 @@ app-example
 /ios
 /android
 
-# Firebase
-# google-services.json e GoogleService-Info.plist são commitados de propósito —
-# EAS Build só envia arquivos do git, e esses contêm só ids públicos.
-# Segurança real vem das security rules do Firestore.
+# Firebase — não commitar. EAS injeta via env var GOOGLE_SERVICES_JSON
+# (configurado com `eas env:create --type file --visibility sensitive`).
+google-services.json
+GoogleService-Info.plist
