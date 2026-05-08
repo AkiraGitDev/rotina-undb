@@ -10,7 +10,7 @@ import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
-import { useProjectsStore } from '@/lib/store/projects';
+import { createProject } from '@/lib/projects-firestore';
 import { useCurrentUser, useUsersStore } from '@/lib/store/users';
 
 const EMOJIS = ['🚀', '📱', '✨', '🎯', '⚡', '🛠️', '📊', '🌐'];
@@ -19,31 +19,39 @@ export default function CriarProjetoScreen() {
   const router = useRouter();
   const currentUser = useCurrentUser();
   const users = useUsersStore((s) => s.users);
-  const createProject = useProjectsStore((s) => s.createProject);
 
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
   const [emoji, setEmoji] = useState(EMOJIS[0]!);
   const [membroIds, setMembroIds] = useState<string[]>([currentUser.id]);
   const [erro, setErro] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   function toggleMembro(id: string) {
     setMembroIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }
 
-  function handleCriar() {
+  async function handleCriar() {
     setErro(null);
     if (!nome.trim()) {
       setErro('Informe o nome do projeto.');
       return;
     }
-    createProject({
-      nome: nome.trim(),
-      descricao: descricao.trim() || undefined,
-      emoji,
-      membroIds,
-    });
-    router.back();
+    setLoading(true);
+    try {
+      await createProject({
+        nome: nome.trim(),
+        descricao: descricao.trim() || undefined,
+        emoji,
+        membroIds,
+      });
+      router.back();
+    } catch (e) {
+      console.warn('[criar-projeto] createProject:', e);
+      setErro('Falha ao salvar. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -115,7 +123,7 @@ export default function CriarProjetoScreen() {
               </View>
             </View>
 
-            <GradientButton label="Criar projeto" onPress={handleCriar} style={styles.cta} />
+            <GradientButton label="Criar projeto" onPress={handleCriar} loading={loading} style={styles.cta} />
           </View>
       </KeyboardSafeScroll>
     </Screen>

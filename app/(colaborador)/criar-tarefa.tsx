@@ -10,35 +10,43 @@ import { TextField } from '@/components/ui/text-field';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
 import { useProjectsOfUser } from '@/lib/store/selectors';
-import { useTasksStore } from '@/lib/store/tasks';
 import { useCurrentUser } from '@/lib/store/users';
+import { createTask } from '@/lib/tasks-firestore';
 
 export default function CriarTarefaScreen() {
   const router = useRouter();
   const currentUser = useCurrentUser();
   const projetos = useProjectsOfUser(currentUser.id);
-  const createTask = useTasksStore((s) => s.createTask);
 
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [projetoId, setProjetoId] = useState<string | null>(projetos[0]?.id ?? null);
   const [erro, setErro] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  function handleCriar() {
+  async function handleCriar() {
     setErro(null);
     if (!titulo.trim() || !projetoId) {
       setErro('Preencha o título e selecione um projeto.');
       return;
     }
-    createTask({
-      titulo: titulo.trim(),
-      descricao: descricao.trim() || undefined,
-      projetoId,
-      autorId: currentUser.id,
-      responsavelId: currentUser.id,
-      status: 'pendente',
-    });
-    router.back();
+    setLoading(true);
+    try {
+      await createTask({
+        titulo: titulo.trim(),
+        descricao: descricao.trim() || undefined,
+        projetoId,
+        autorId: currentUser.id,
+        responsavelId: currentUser.id,
+        status: 'pendente',
+      });
+      router.back();
+    } catch (e) {
+      console.warn('[criar-tarefa colab] createTask:', e);
+      setErro('Falha ao salvar. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -83,7 +91,7 @@ export default function CriarTarefaScreen() {
               {erro ? <Text style={styles.error}>{erro}</Text> : null}
             </View>
 
-            <GradientButton label="Enviar para aprovação" onPress={handleCriar} style={styles.cta} />
+            <GradientButton label="Enviar para aprovação" onPress={handleCriar} loading={loading} style={styles.cta} />
           </View>
       </KeyboardSafeScroll>
     </Screen>

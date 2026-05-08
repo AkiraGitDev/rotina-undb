@@ -9,8 +9,8 @@ import { Screen } from '@/components/ui/screen';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, LetterSpacing, Radius, Spacing } from '@/constants/theme';
 import { useProjectById, useTaskById, useUserById } from '@/lib/store/selectors';
-import { useTasksStore } from '@/lib/store/tasks';
 import { useCurrentUser } from '@/lib/store/users';
+import { removeTask, updateProgress } from '@/lib/tasks-firestore';
 import { PRIORITY_WEIGHT, TaskPriority, TaskStatus } from '@/types/task';
 
 const STATUS_LABEL: Record<TaskStatus, string> = {
@@ -39,8 +39,6 @@ export default function TarefaDetalhe() {
   const responsavel = useUserById(tarefa?.responsavelId);
   const autor = useUserById(tarefa?.autorId);
   const currentUser = useCurrentUser();
-  const updateProgress = useTasksStore((s) => s.updateProgress);
-  const removeTask = useTasksStore((s) => s.removeTask);
 
   if (!tarefa) {
     return (
@@ -63,12 +61,25 @@ export default function TarefaDetalhe() {
       {
         text: 'Apagar',
         style: 'destructive',
-        onPress: () => {
-          removeTask(tarefa.id);
-          router.back();
+        onPress: async () => {
+          try {
+            await removeTask(tarefa.id);
+            router.back();
+          } catch (e) {
+            console.warn('[tarefa[id]] removeTask:', e);
+          }
         },
       },
     ]);
+  }
+
+  async function handleProgressChange(step: number) {
+    if (!tarefa) return;
+    try {
+      await updateProgress(tarefa.id, step, tarefa.status);
+    } catch (e) {
+      console.warn('[tarefa[id]] updateProgress:', e);
+    }
   }
 
   return (
@@ -102,7 +113,7 @@ export default function TarefaDetalhe() {
                 return (
                   <Pressable
                     key={step}
-                    onPress={() => updateProgress(tarefa.id, step)}
+                    onPress={() => handleProgressChange(step)}
                     style={[styles.step, selected && styles.stepSelected]}
                   >
                     <Text style={[styles.stepLabel, selected && styles.stepLabelSelected]}>{step}%</Text>

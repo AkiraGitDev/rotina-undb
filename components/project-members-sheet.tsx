@@ -7,6 +7,7 @@ import { GradientButton } from '@/components/ui/gradient-button';
 import { Label } from '@/components/ui/label';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, Spacing } from '@/constants/theme';
+import { updateProject } from '@/lib/projects-firestore';
 import { useProjectsStore } from '@/lib/store/projects';
 import { useUsersStore } from '@/lib/store/users';
 
@@ -18,7 +19,6 @@ type Props = {
 export function ProjectMembersSheet({ projectId, onDismiss }: Props) {
   const project = useProjectsStore((s) => s.projects.find((p) => p.id === projectId) ?? null);
   const users = useUsersStore((s) => s.users);
-  const updateProject = useProjectsStore((s) => s.updateProject);
 
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -32,9 +32,13 @@ export function ProjectMembersSheet({ projectId, onDismiss }: Props) {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!project) return;
-    updateProject(project.id, { membroIds: selected });
+    try {
+      await updateProject(project.id, { membroIds: selected });
+    } catch (e) {
+      console.warn('[project-members-sheet] updateProject:', e);
+    }
     onDismiss();
   }
 

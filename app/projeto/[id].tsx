@@ -12,10 +12,10 @@ import { ProgressBar } from '@/components/ui/progress-bar';
 import { Screen } from '@/components/ui/screen';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, LetterSpacing, Spacing } from '@/constants/theme';
-import { useProjectsStore } from '@/lib/store/projects';
+import { removeProject } from '@/lib/projects-firestore';
 import { projectProgress, useProjectById, useTasksOfProject } from '@/lib/store/selectors';
-import { useTasksStore } from '@/lib/store/tasks';
 import { useCurrentUser, useUsersStore } from '@/lib/store/users';
+import { removeTasksOfProject } from '@/lib/tasks-firestore';
 
 export default function ProjetoDetalhe() {
   const router = useRouter();
@@ -24,8 +24,6 @@ export default function ProjetoDetalhe() {
   const tarefas = useTasksOfProject(id ?? '');
   const users = useUsersStore((s) => s.users);
   const currentUser = useCurrentUser();
-  const removeProject = useProjectsStore((s) => s.removeProject);
-  const removeTask = useTasksStore((s) => s.removeTask);
   const [editingMembers, setEditingMembers] = useState(false);
 
   if (!projeto) {
@@ -49,10 +47,15 @@ export default function ProjetoDetalhe() {
         {
           text: 'Apagar',
           style: 'destructive',
-          onPress: () => {
-            tarefas.forEach((t) => removeTask(t.id));
-            removeProject(projeto.id);
-            router.back();
+          onPress: async () => {
+            try {
+              // Apaga tarefas em batch antes do projeto pra não deixar órfãs
+              await removeTasksOfProject(projeto.id);
+              await removeProject(projeto.id);
+              router.back();
+            } catch (e) {
+              console.warn('[projeto[id]] handleDelete:', e);
+            }
           },
         },
       ],

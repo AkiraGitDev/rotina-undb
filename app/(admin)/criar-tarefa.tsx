@@ -12,8 +12,8 @@ import { TextField } from '@/components/ui/text-field';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
 import { useProjectsStore } from '@/lib/store/projects';
-import { useTasksStore } from '@/lib/store/tasks';
 import { useCurrentUser, useUsersStore } from '@/lib/store/users';
+import { createTask } from '@/lib/tasks-firestore';
 import { PRIORITY_WEIGHT, TaskPriority } from '@/types/task';
 
 const PRIORIDADES: { value: TaskPriority; label: string }[] = [
@@ -28,7 +28,6 @@ export default function CriarTarefaAdminScreen() {
   const currentUser = useCurrentUser();
   const projects = useProjectsStore((s) => s.projects);
   const users = useUsersStore((s) => s.users);
-  const createTask = useTasksStore((s) => s.createTask);
 
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
@@ -36,26 +35,35 @@ export default function CriarTarefaAdminScreen() {
   const [responsavelId, setResponsavelId] = useState<string | null>(null);
   const [prioridade, setPrioridade] = useState<TaskPriority>('media');
   const [erro, setErro] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const projeto = projects.find((p) => p.id === projetoId);
   const elegiveis = projeto ? users.filter((u) => projeto.membroIds.includes(u.id)) : users;
 
-  function handleCriar() {
+  async function handleCriar() {
     setErro(null);
     if (!titulo.trim() || !projetoId) {
       setErro('Preencha o título e selecione um projeto.');
       return;
     }
-    createTask({
-      titulo: titulo.trim(),
-      descricao: descricao.trim() || undefined,
-      projetoId,
-      autorId: currentUser.id,
-      responsavelId: responsavelId ?? undefined,
-      prioridade,
-      status: 'aprovada',
-    });
-    router.back();
+    setLoading(true);
+    try {
+      await createTask({
+        titulo: titulo.trim(),
+        descricao: descricao.trim() || undefined,
+        projetoId,
+        autorId: currentUser.id,
+        responsavelId: responsavelId ?? undefined,
+        prioridade,
+        status: 'aprovada',
+      });
+      router.back();
+    } catch (e) {
+      console.warn('[criar-tarefa admin] createTask:', e);
+      setErro('Falha ao salvar. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -150,7 +158,7 @@ export default function CriarTarefaAdminScreen() {
 
             {erro ? <Text style={styles.error}>{erro}</Text> : null}
 
-            <GradientButton label="Criar tarefa" onPress={handleCriar} style={styles.cta} />
+            <GradientButton label="Criar tarefa" onPress={handleCriar} loading={loading} style={styles.cta} />
           </View>
       </KeyboardSafeScroll>
     </Screen>

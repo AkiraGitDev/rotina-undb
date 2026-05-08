@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { PriorityDot } from '@/components/ui/priority-dot';
 import { Title } from '@/components/ui/title';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
-import { useTasksStore } from '@/lib/store/tasks';
+import { approveTask, rejectTask } from '@/lib/tasks-firestore';
 import { PRIORITY_WEIGHT, Task, TaskPriority } from '@/types/task';
 
 type Props = {
@@ -23,8 +23,6 @@ const PRIORIDADES: { value: TaskPriority; label: string }[] = [
 ];
 
 export function ApproveTaskSheet({ task, onDismiss }: Props) {
-  const approveTask = useTasksStore((s) => s.approveTask);
-  const rejectTask = useTasksStore((s) => s.rejectTask);
   const [prioridade, setPrioridade] = useState<TaskPriority>('media');
 
   useEffect(() => {
@@ -35,15 +33,23 @@ export function ApproveTaskSheet({ task, onDismiss }: Props) {
     return <BottomSheet visible={false} onDismiss={onDismiss} />;
   }
 
-  function handleApprove() {
+  async function handleApprove() {
     if (!task) return;
-    approveTask(task.id, prioridade);
+    try {
+      await approveTask(task.id, prioridade);
+    } catch (e) {
+      console.warn('[approve-task-sheet] approveTask:', e);
+    }
     onDismiss();
   }
 
-  function handleReject() {
+  async function handleReject() {
     if (!task) return;
-    rejectTask(task.id);
+    try {
+      await rejectTask(task.id);
+    } catch (e) {
+      console.warn('[approve-task-sheet] rejectTask:', e);
+    }
     onDismiss();
   }
 
