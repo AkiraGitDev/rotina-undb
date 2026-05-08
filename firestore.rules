@@ -1,0 +1,119 @@
+rules_version = '2';
+
+// Security rules do Firestore.
+// Como ativar:
+//   1. Cole o conteúdo deste arquivo em https://console.firebase.google.com
+//      → seu projeto → Firestore Database → aba "Rules"
+//   2. Clique em "Publish"
+//
+// Como testar antes de publicar:
+//   No console do Firebase → Firestore → Rules → tem um botão "Rules Playground"
+//   onde você simula chamadas (com diferentes UIDs e payloads) e vê o veredito.
+//
+// Como o app interage com estas rules:
+//   - users:    perfis, doc.id = uid do Firebase Auth
+//   - projects: doc.id auto-gerado, campos { nome, descricao, emoji, membroIds[], createdAt }
+//   - tasks:    doc.id auto-gerado, campos { titulo, descricao, projetoId, autorId,
+//                 responsavelId, status, prioridade, cumprimento, createdAt, updatedAt }
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helpers ────────────────────────────────────────────────────────
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    // Lê o doc de users/{uid} pra checar role. Atenção: isso conta como
+    // 1 read por request — Firestore cobra e tem limite, mas pra apps
+    // pequenos é ok.
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data;
+    }
+
+    function isAdmin() {
+      return isAuthed()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && userDoc(request.auth.uid).role == 'admin';
+    }
+
+    function isSelf(uid) {
+      return isAuthed() && request.auth.uid == uid;
+    }
+
+    // Helper: campos não mudaram entre o doc atual (resource) e o que está
+    // sendo escrito (request.resource).
+    function unchanged(field) {
+      return request.resource.data[field] == resource.data[field];
+    }
+
+    // ─── users ──────────────────────────────────────────────────────────
+    match /users/{userId} {
+      // Qualquer logado pode ler perfis (precisamos pra mostrar nomes,
+      // avatares, listar colaboradores).
+      allow read: if isAuthed();
+
+      // Qualquer um pode criar SEU PRÓPRIO doc. Necessário pro cadastro
+      // do primeiro admin funcionar via client SDK.
+      // ⚠️ Buraco: alguém com a API key pode chamar a API e se cadastrar
+      // como admin. Pra fechar 100%, mover esse flow pra Cloud Function.
+      allow create: if isSelf(userId);
+
+      // Update: próprio usuário pode mudar nome/avatarColor mas NÃO pode
+      // mudar role nem email (anti self-elevation). Admin pode mudar tudo.
+      allow update: if (
+        isSelf(userId)
+          && unchanged('role')
+          && unchanged('email')
+      ) || isAdmin();
+
+      // Delete: só admin, e não pode apagar a si mesmo (anti foot-gun).
+      allow delete: if isAdmin() && !isSelf(userId);
+    }
+
+    // ─── projects ───────────────────────────────────────────────────────
+    match /projects/{projectId} {
+      // Todos logados leem (dashboards listam projetos da empresa).
+      allow read: if isAuthed();
+
+      // Só admin cria/edita/deleta projetos.
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ─── tasks ──────────────────────────────────────────────────────────
+    match /tasks/{taskId} {
+      // Todos logados leem (dashboards e listas dependem disso).
+      allow read: if isAuthed();
+
+      // Criar:
+      //   - admin: pode tudo (status pode ser direto 'aprovada')
+      //   - colaborador: só pode criar com autorId = self e status = 'pendente'
+      allow create: if isAuthed() && (
+        isAdmin()
+        || (
+          request.resource.data.autorId == request.auth.uid
+          && request.resource.data.status == 'pendente'
+        )
+      );
+
+      // Update: depende do papel.
+      //   - admin: livre
+      //   - responsável da tarefa: pode mexer em cumprimento + status,
+      //     mas NÃO pode mudar título, projeto, autoria, prioridade, nem responsável.
+      allow update: if isAuthed() && (
+        isAdmin()
+        || (
+          resource.data.responsavelId == request.auth.uid
+          && unchanged('titulo')
+          && unchanged('projetoId')
+          && unchanged('autorId')
+          && unchanged('responsavelId')
+          && unchanged('prioridade')
+        )
+      );
+
+      // Delete: só admin.
+      allow delete: if isAdmin();
+    }
+  }
+}
