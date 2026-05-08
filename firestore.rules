@@ -53,11 +53,14 @@ service cloud.firestore {
       // avatares, listar colaboradores).
       allow read: if isAuthed();
 
-      // Qualquer um pode criar SEU PRÓPRIO doc. Necessário pro cadastro
-      // do primeiro admin funcionar via client SDK.
+      // Create permitido em dois casos:
+      //   - usuário criando SEU PRÓPRIO doc (cadastro do primeiro admin)
+      //   - admin criando doc de outro user (fluxo "Convidar colaborador",
+      //     orquestrado por inviteColaborador em lib/auth.ts via secondary
+      //     Firebase app)
       // ⚠️ Buraco: alguém com a API key pode chamar a API e se cadastrar
       // como admin. Pra fechar 100%, mover esse flow pra Cloud Function.
-      allow create: if isSelf(userId);
+      allow create: if isSelf(userId) || isAdmin();
 
       // Update: próprio usuário pode mudar nome/avatarColor mas NÃO pode
       // mudar role nem email (anti self-elevation). Admin pode mudar tudo.

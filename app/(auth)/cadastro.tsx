@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -12,6 +12,7 @@ import { Colors, FontSize, Spacing } from '@/constants/theme';
 import { describeAuthError, hasAnyUser, signUpAdmin } from '@/lib/auth';
 
 export default function CadastroScreen() {
+  const router = useRouter();
   const [nomeEmpresa, setNomeEmpresa] = useState('');
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -19,6 +20,8 @@ export default function CadastroScreen() {
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [enviado, setEnviado] = useState(false);
+  const [emailEnviado, setEmailEnviado] = useState('');
 
   async function handleCadastrar() {
     setErro(null);
@@ -43,13 +46,43 @@ export default function CadastroScreen() {
         setErro('Esta empresa já possui um administrador. Peça para ele criar sua conta na seção de Usuários.');
         return;
       }
-      await signUpAdmin(nome.trim(), email.trim().toLowerCase(), senha);
-      // Redirecionamento automático via onAuthStateChanged → (auth)/_layout
+      const emailNormalizado = email.trim().toLowerCase();
+      await signUpAdmin(nome.trim(), emailNormalizado, senha);
+      // signUpAdmin envia email de verificação e desloga o usuário.
+      // Mostra tela de confirmação com instrução pra verificar inbox.
+      setEmailEnviado(emailNormalizado);
+      setEnviado(true);
     } catch (e) {
       setErro(describeAuthError(e));
     } finally {
       setLoading(false);
     }
+  }
+
+  if (enviado) {
+    return (
+      <Screen>
+        <KeyboardSafeScroll contentContainerStyle={styles.scroll}>
+          <View style={styles.header}>
+            <Label>Quase lá</Label>
+            <Title style={styles.title}>Verifique seu email</Title>
+            <Text style={styles.subtitle}>
+              Enviamos um link de verificação para <Text style={styles.emailHighlight}>{emailEnviado}</Text>.
+              Clique no link e depois faça login pra entrar.
+            </Text>
+            <Text style={styles.subtitle}>
+              Não recebeu? Confira o spam ou tente entrar — vamos reenviar automaticamente.
+            </Text>
+          </View>
+
+          <GradientButton
+            label="Ir para o login"
+            onPress={() => router.replace('/(auth)/login')}
+            style={styles.cta}
+          />
+        </KeyboardSafeScroll>
+      </Screen>
+    );
   }
 
   return (
@@ -137,6 +170,10 @@ const styles = StyleSheet.create({
     color: Colors.text.muted,
     fontSize: FontSize.md,
     lineHeight: 20,
+  },
+  emailHighlight: {
+    color: Colors.white,
+    fontSize: FontSize.md,
   },
   form: {
     gap: Spacing.lg,
